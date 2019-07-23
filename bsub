@@ -1,0 +1,26 @@
+#!/usr/bin/env python3
+import click
+import subprocess
+import sys
+
+
+@click.option("--job-name", "-J")
+@click.option("--depends-on", "-w")
+@click.option("--output-file", "-o", default="nohup.out")
+@click.option("--error-file", "-e", default="nohup.err")
+@click.option("--memory", "-M", default=8192)
+@click.option("--rusage", "-R", default="rusage[mem=8192]")
+@click.argument("arg", nargs=-1, required=True, type=click.UNPROCESSED)
+@click.command(context_settings=dict(ignore_unknown_options=True))
+def main(arg, job_name, depends_on, output_file, error_file, memory, rusage):
+    command_to_run = " ".join(arg)
+    with open(output_file, "ab") as out, open(error_file, "ab") as err:
+        process = subprocess.Popen(command_to_run, stdout=out, stderr=err, bufsize=0, universal_newlines=True, shell=True)
+        process.communicate()
+        click.echo(process.returncode)
+        if process.returncode != 0:
+            sys.exit(process.returncode)
+
+
+if __name__ == '__main__':
+    main()
